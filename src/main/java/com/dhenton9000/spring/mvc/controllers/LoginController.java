@@ -1,6 +1,7 @@
 package com.dhenton9000.spring.mvc.controllers;
 
 import com.dhenton9000.spring.mvc.auth.AuthenticationStateHandler;
+import com.dhenton9000.spring.mvc.auth.OktaFilter;
 import com.okta.authn.sdk.AuthenticationException;
 import com.okta.authn.sdk.client.AuthenticationClient;
 import com.okta.authn.sdk.resource.AuthenticationResponse;
@@ -42,40 +43,45 @@ public class LoginController {
     }
 
     @RequestMapping("/processLogin")
-    public String doLoginWork(@ModelAttribute("loginForm") LoginForm form, 
+    public String doLoginWork(@ModelAttribute("loginForm") LoginForm form,
             HttpServletRequest request, HttpServletResponse response, Model model) {
-            String password = form.getPassword();
-            String username = form.getUserEmail();
+        String password = form.getPassword();
+        String username = form.getUserEmail();
         try {
-                AuthenticationResponse authRep = authenticationClient.authenticate(username,
-                        password.toCharArray(),
-                        "/",
-                        new AuthenticationStateHandler(request, response));
-                User u = authRep.getUser();
-                
-                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+           // LOG.info("&&&&&&&&&& 1 ");
+            AuthenticationResponse authRep = authenticationClient.authenticate(username,
+                    password.toCharArray(),
+                    "/",
+                    new AuthenticationStateHandler(request, response));
+            User u = authRep.getUser();
+            Object ss = request.getSession()
+                    .getAttribute(OktaFilter.USER_SESSION_KEY);
+
+          //  LOG.info("&&&&&&&&&&& 2 " + ss);
+
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 //                if (auth == null) {
 //                   // auth = new Authentication();
 //                    
 //                    SecurityContextHolder.getContext().setAuthentication(a);
 //                }
-             // Object secObject = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-               model.addAttribute("message", authRep.getUser().getLogin());
-              return "tiles.homepage";
+            // Object secObject = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            model.addAttribute("message", authRep.getUser().getLogin());
+            return "tiles.homepage";
         } catch (AuthenticationException ex) {
-            LOG.error("Auth error "+ex.getMessage());
+            LOG.error("Auth error " + ex.getMessage());
         }
-           return "tiles.authn.login";
+        return "tiles.authn.login";
     }
 
     @RequestMapping("/logout")
     public String doLogout(HttpServletRequest request, HttpServletResponse response) {
         String message = "Logout";
-         
-          if (request.getSession(false) != null) {
-             request.getSession().invalidate();
-         }
-         return "redirect:/authn/login";
+
+        if (request.getSession(false) != null) {
+            request.getSession().invalidate();
+        }
+        return "redirect:/authn/login";
     }
 
 }

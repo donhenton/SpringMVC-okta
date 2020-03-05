@@ -6,11 +6,13 @@ import com.okta.authn.sdk.resource.AuthenticationResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 public class AuthenticationStateHandler extends AuthenticationStateHandlerAdapter {
 
     static final String PREVIOUS_AUTHN_RESULT = AuthenticationResponse.class.getName();
-
+    private static Logger LOG = LogManager.getLogger(AuthenticationStateHandler.class);
     private final HttpServletRequest request;
     private final HttpServletResponse response;
 
@@ -25,8 +27,9 @@ public class AuthenticationStateHandler extends AuthenticationStateHandlerAdapte
         // we need to force the flow to start over
         if (successResponse.getSessionToken() != null) {
             // if we have a Session Token add the corresponding user to the Session
+         //   LOG.info("inserting into session in the handler");
             request.getSession(true)
-                    .setAttribute(OktaFilter.USER_SESSION_KEY, 
+                    .setAttribute(OktaFilter.USER_SESSION_KEY,
                             successResponse.getUser());
         }
 
@@ -52,7 +55,7 @@ public class AuthenticationStateHandler extends AuthenticationStateHandlerAdapte
 
     private void setAuthNResult(AuthenticationResponse authenticationResponse) {
         request.getSession(true)
-                .setAttribute( AuthenticationStateHandler.PREVIOUS_AUTHN_RESULT,
+                .setAttribute(AuthenticationStateHandler.PREVIOUS_AUTHN_RESULT,
                         authenticationResponse);
     }
 }
