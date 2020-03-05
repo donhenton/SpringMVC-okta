@@ -1,4 +1,4 @@
-#Spring MVC Okta
+# Spring MVC Okta
 
 Demonstration of a standard filter security system using Okta for authentication
 Does not support roles or authorization
