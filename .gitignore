@@ -1,0 +1,6 @@
+/target
+nbactions.xml
+/weblog.txt
+/src/main/webapp/WEB-INF/classes 
+/src/main/webapp/WEB-INF/lib 
+/src/main/resources/config.properties
