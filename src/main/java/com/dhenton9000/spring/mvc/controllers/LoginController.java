@@ -48,7 +48,7 @@ public class LoginController {
         String password = form.getPassword();
         String username = form.getUserEmail();
         try {
-           // LOG.info("&&&&&&&&&& 1 ");
+
             AuthenticationResponse authRep = authenticationClient.authenticate(username,
                     password.toCharArray(),
                     "/",
@@ -57,21 +57,24 @@ public class LoginController {
             Object ss = request.getSession()
                     .getAttribute(OktaFilter.USER_SESSION_KEY);
 
-          //  LOG.info("&&&&&&&&&&& 2 " + ss);
-
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            /*
+          populate the context holder with the User u object above
+           SecurityContextHolder.getContext().setAuthentication(authentication);
+             */
+            //           Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 //                if (auth == null) {
 //                   // auth = new Authentication();
 //                    
 //                    SecurityContextHolder.getContext().setAuthentication(a);
 //                }
-            // Object secObject = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            //             Object secObject = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             model.addAttribute("message", authRep.getUser().getLogin());
             return "tiles.homepage";
         } catch (AuthenticationException ex) {
             LOG.error("Auth error " + ex.getMessage());
+            return "redirect:/authn/login?status=failedLogin";
         }
-        return "tiles.authn.login";
+      
     }
 
     @RequestMapping("/logout")
@@ -81,7 +84,7 @@ public class LoginController {
         if (request.getSession(false) != null) {
             request.getSession().invalidate();
         }
-        return "redirect:/authn/login";
+        return "redirect:/authn/login?status=logoutSuccess";
     }
 
 }
