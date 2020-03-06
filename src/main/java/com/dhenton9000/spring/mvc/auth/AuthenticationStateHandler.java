@@ -3,28 +3,30 @@ package com.dhenton9000.spring.mvc.auth;
 import com.okta.authn.sdk.AuthenticationStateHandlerAdapter;
 import com.okta.authn.sdk.resource.AuthenticationResponse;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 public class AuthenticationStateHandler extends AuthenticationStateHandlerAdapter {
 
-    static final String PREVIOUS_AUTHN_RESULT = AuthenticationResponse.class.getName();
+   
     private static Logger LOG = LogManager.getLogger(AuthenticationStateHandler.class);
-    private final HttpServletRequest request;
-    private final HttpServletResponse response;
+     
+    private boolean success = false;
+    private AuthenticationResponse result;
 
-    public AuthenticationStateHandler(HttpServletRequest request, HttpServletResponse response) {
-        this.request = request;
-        this.response = response;
+    public AuthenticationStateHandler( ) {
+         
     }
 
     @Override
     public void handleSuccess(AuthenticationResponse successResponse) {
+        
+        this.success = true;
+        this.result = successResponse;
+        
         // the last request was a success, but if we do not have a session token
         // we need to force the flow to start over
+        /*
         if (successResponse.getSessionToken() != null) {
             // if we have a Session Token add the corresponding user to the Session
          //   LOG.info("inserting into session in the handler");
@@ -36,26 +38,58 @@ public class AuthenticationStateHandler extends AuthenticationStateHandlerAdapte
         String relayState = successResponse.getRelayState();
         String dest = relayState != null ? relayState : "/";
         redirect(dest, successResponse);
+        
+*/
     }
 
     @Override
     public void handleUnknown(AuthenticationResponse unknownResponse) {
-        redirect("/authn/login?error=Unsupported State: "
-                + unknownResponse.getStatus().name(), unknownResponse);
+        this.success = false;
+        this.result = unknownResponse;
+        //redirect("/authn/login?error=Unsupported State: "
+        //        + unknownResponse.getStatus().name(), unknownResponse);
     }
 
-    private void redirect(String location, AuthenticationResponse authenticationResponse) {
-        try {
-            setAuthNResult(authenticationResponse);
-            response.sendRedirect(location);
-        } catch (IOException e) {
-            throw new IllegalStateException("failed to redirect.", e);
-        }
+//    private void redirect(String location, AuthenticationResponse authenticationResponse) {
+//        try {
+//            
+//            response.sendRedirect(location);
+//        } catch (IOException e) {
+//            throw new IllegalStateException("failed to redirect.", e);
+//        }
+//    }
+
+//    private void setAuthNResult(AuthenticationResponse authenticationResponse) {
+//        request.getSession(true)
+//                .setAttribute(AuthenticationStateHandler.PREVIOUS_AUTHN_RESULT,
+//                        authenticationResponse);
+//    }
+
+    /**
+     * @return the success
+     */
+    public boolean isSuccess() {
+        return success;
     }
 
-    private void setAuthNResult(AuthenticationResponse authenticationResponse) {
-        request.getSession(true)
-                .setAttribute(AuthenticationStateHandler.PREVIOUS_AUTHN_RESULT,
-                        authenticationResponse);
+    /**
+     * @param success the success to set
+     */
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    /**
+     * @return the result
+     */
+    public AuthenticationResponse getResult() {
+        return result;
+    }
+
+    /**
+     * @param result the result to set
+     */
+    public void setResult(AuthenticationResponse result) {
+        this.result = result;
     }
 }

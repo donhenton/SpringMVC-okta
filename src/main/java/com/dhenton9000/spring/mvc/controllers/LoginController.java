@@ -18,6 +18,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
 @Controller
@@ -31,13 +32,14 @@ public class LoginController {
     private AuthenticationClient authenticationClient;
 
     @RequestMapping("/login")
-    public String doLogin(Model model) {
-
+    public String doLogin(Model model,
+             @RequestParam(value="req" ,required=false) String request ) {
+        
         LoginForm loginForm = new LoginForm();
-        /*
-       
-         */
-        /// model.addAttribute("message",message);
+      
+        if (request != null)
+            loginForm.setRequest(request);
+ 
         model.addAttribute("loginForm", loginForm);
         return "tiles.authn.login";
     }
@@ -47,15 +49,34 @@ public class LoginController {
             HttpServletRequest request, HttpServletResponse response, Model model) {
         String password = form.getPassword();
         String username = form.getUserEmail();
+        String pathRequest = form.getRequest();
         try {
+            final AuthenticationStateHandler authenticationStateHandler = new AuthenticationStateHandler();
 
-            AuthenticationResponse authRep = authenticationClient.authenticate(username,
+
+                    authenticationClient.authenticate(username,
                     password.toCharArray(),
-                    "/",
-                    new AuthenticationStateHandler(request, response));
-            User u = authRep.getUser();
-            Object ss = request.getSession()
-                    .getAttribute(OktaFilter.USER_SESSION_KEY);
+                    "/", authenticationStateHandler);
+
+
+
+
+           if (authenticationStateHandler.isSuccess()) {
+               request.getSession(true)
+                    .setAttribute(OktaFilter.USER_SESSION_KEY,
+                            authenticationStateHandler.getResult().getUser());
+                
+               return "redirect:"+pathRequest;
+               
+           } else {
+              
+               return "redirect:/authn/login?status="+ 
+                       authenticationStateHandler.getResult().getStatus().name();
+           }
+
+
+
+
 
             /*
           populate the context holder with the User u object above
@@ -68,8 +89,8 @@ public class LoginController {
 //                    SecurityContextHolder.getContext().setAuthentication(a);
 //                }
             //             Object secObject = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            model.addAttribute("message", authRep.getUser().getLogin());
-            return "tiles.homepage";
+           // model.addAttribute("message", authRep.getUser().getLogin());
+          //  return "tiles.homepage";
         } catch (AuthenticationException ex) {
             LOG.error("Auth error " + ex.getMessage());
             return "redirect:/authn/login?status=failedLogin";

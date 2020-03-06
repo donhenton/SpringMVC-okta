@@ -1,20 +1,12 @@
- 
-
 package com.dhenton9000.spring.mvc.controllers;
 
 import java.io.Serializable;
 
- 
 public class LoginForm implements Serializable {
+
     private String userEmail;
-
-    @Override
-    public String toString() {
-        return "LoginForm{" + "userEmail=" + userEmail + ", password=*************}";
-    }
     private String password;
-
-    
+    private String request;
 
     /**
      * @return the password
@@ -42,5 +34,19 @@ public class LoginForm implements Serializable {
      */
     public void setUserEmail(String userEmail) {
         this.userEmail = userEmail;
+    }
+
+    /**
+     * @return the request
+     */
+    public String getRequest() {
+        return request;
+    }
+
+    /**
+     * @param request the request to set
+     */
+    public void setRequest(String request) {
+        this.request = request;
     }
 }
