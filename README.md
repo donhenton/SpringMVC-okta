@@ -7,4 +7,5 @@ Does not support roles or authorization
 ## Configure Your Okta Account
 
 Create a standard demo Okta organization, do not activate MFA
+This code uses a the direct api NOT oauth
 
